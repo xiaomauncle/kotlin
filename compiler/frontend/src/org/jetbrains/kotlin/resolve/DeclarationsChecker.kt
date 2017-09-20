@@ -78,22 +78,7 @@ class DeclarationsChecker(
         }
 
         for ((classOrObject, classDescriptor) in bodiesResolveContext.declaredClasses.entries) {
-            checkSupertypesForConsistency(classDescriptor, classOrObject)
-            checkTypesInClassHeader(classOrObject)
-
-            when (classOrObject) {
-                is KtClass -> {
-                    checkClassButNotObject(classOrObject, classDescriptor)
-                    descriptorResolver.checkNamesInConstraints(
-                            classOrObject, classDescriptor, classDescriptor.scopeForClassHeaderResolution, trace)
-                }
-                is KtObjectDeclaration -> {
-                    checkObject(classOrObject, classDescriptor)
-                }
-            }
-
-            checkPrimaryConstructor(classOrObject, classDescriptor)
-
+            checkClass(classDescriptor, classOrObject)
             modifiersChecker.checkModifiersForDeclaration(classOrObject, classDescriptor)
             identifierChecker.checkDeclaration(classOrObject, trace)
             exposedChecker.checkClassHeader(classOrObject, classDescriptor)
@@ -301,6 +286,29 @@ class DeclarationsChecker(
         }
         annotationChecker.check(packageDirective, trace, null)
         ModifierCheckerCore.check(packageDirective, trace, descriptor = null, languageVersionSettings = languageVersionSettings)
+    }
+
+    private fun checkClass(classDescriptor: ClassDescriptorWithResolutionScopes, classOrObject: KtClassOrObject) {
+        checkSupertypesForConsistency(classDescriptor, classOrObject)
+        checkTypesInClassHeader(classOrObject)
+
+        when (classOrObject) {
+            is KtClass -> {
+                checkClassButNotObject(classOrObject, classDescriptor)
+                descriptorResolver.checkNamesInConstraints(
+                        classOrObject, classDescriptor, classDescriptor.scopeForClassHeaderResolution, trace)
+            }
+            is KtObjectDeclaration -> {
+                checkObject(classOrObject, classDescriptor)
+            }
+        }
+
+        checkPrimaryConstructor(classOrObject, classDescriptor)
+
+        if (classDescriptor.isExpect && Visibilities.isPrivate(classDescriptor.visibility)) {
+            val element = classOrObject.modifierList?.getModifier(KtTokens.PRIVATE_KEYWORD) ?: classOrObject
+            trace.report(PRIVATE_EXPECTED_CLASS_MEMBER.on(element))
+        }
     }
 
     private fun checkTypesInClassHeader(classOrObject: KtClassOrObject) {
@@ -579,7 +587,8 @@ class DeclarationsChecker(
     private fun checkMemberProperty(
             property: KtProperty,
             propertyDescriptor: PropertyDescriptor,
-            classDescriptor: ClassDescriptor) {
+            classDescriptor: ClassDescriptor
+    ) {
         val modifierList = property.modifierList
 
         if (modifierList != null) {
@@ -608,6 +617,10 @@ class DeclarationsChecker(
             if (setter != null && setter.hasBody()) {
                 trace.report(ABSTRACT_PROPERTY_WITH_SETTER.on(setter))
             }
+        }
+
+        if (classDescriptor.isExpect && Visibilities.isPrivate(propertyDescriptor.visibility)) {
+            trace.report(PRIVATE_EXPECTED_CLASS_MEMBER.on(modifierList?.getModifier(KtTokens.PRIVATE_KEYWORD) ?: property))
         }
     }
 
@@ -723,6 +736,10 @@ class DeclarationsChecker(
             if (!hasBody && !hasAbstractModifier && !hasExternalModifier && !inInterface && !isExpectClass) {
                 trace.report(NON_ABSTRACT_FUNCTION_WITH_NO_BODY.on(function, functionDescriptor))
             }
+            if (containingDescriptor.isExpect && Visibilities.isPrivate(functionDescriptor.visibility)) {
+                trace.report(PRIVATE_EXPECTED_CLASS_MEMBER.on(function.modifierList?.getModifier(KtTokens.PRIVATE_KEYWORD) ?: function))
+            }
+
         }
         else /* top-level only */ {
             if (!function.hasBody() && !hasAbstractModifier && !hasExternalModifier && !functionDescriptor.isExpect) {

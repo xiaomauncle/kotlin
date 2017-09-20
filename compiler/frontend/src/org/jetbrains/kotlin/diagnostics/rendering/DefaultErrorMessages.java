@@ -273,6 +273,7 @@ public class DefaultErrorMessages {
         MAP.put(EXPECTED_DELEGATED_PROPERTY, "Expected property cannot be delegated");
         MAP.put(EXPECTED_LATEINIT_PROPERTY, "Expected property cannot be lateinit");
         MAP.put(SUPERTYPE_INITIALIZED_IN_EXPECTED_CLASS, "Expected classes cannot initialize supertypes");
+        MAP.put(PRIVATE_EXPECTED_CLASS_MEMBER, "Expected class member cannot be private");
 
         MAP.put(ACTUAL_TYPE_ALIAS_NOT_TO_CLASS, "Right-hand side of actual type alias should be a class, not another type alias");
         MAP.put(ACTUAL_TYPE_ALIAS_TO_CLASS_WITH_DECLARATION_SITE_VARIANCE, "Aliased class should not have type parameters with declaration-site variance");
