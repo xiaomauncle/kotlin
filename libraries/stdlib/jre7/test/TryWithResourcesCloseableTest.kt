@@ -1,4 +1,4 @@
-package kotlin.jdk7.test
+package test.jdk7
 
 import org.junit.Ignore
 import java.io.*
@@ -44,7 +44,6 @@ class TryWithResourcesCloseableTest {
         assertTrue(e.suppressed.isEmpty())
     }
 
-    @Ignore
     @Test fun opFailsCloseFails() {
         val e = assertFails {
             Resource(faultyClose = true).use { error("op fail") }
@@ -53,7 +52,6 @@ class TryWithResourcesCloseableTest {
         assertTrue(e.suppressed.single() is IOException)
     }
 
-    @Ignore
     @Test fun opFailsCloseFailsTwice() {
         val e = assertFails {
             Resource(faultyClose = true).use { _ ->
