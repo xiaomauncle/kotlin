@@ -34,6 +34,8 @@ val testDistProjects = listOf(
         ":plugins:android-extensions-compiler",
         ":kotlin-ant")
 
+val jdk6ServerCfg by configurations.creating
+
 dependencies {
     depDistProjects.forEach {
         testCompile(projectDist(it))
@@ -51,6 +53,8 @@ dependencies {
     testCompile(ideaSdkDeps("openapi", "idea", "util", "asm-all", "commons-httpclient-3.1-patched"))
     testRuntime(ideaSdkCoreDeps("*.jar"))
     testRuntime(ideaSdkDeps("*.jar"))
+
+    jdk6ServerCfg(project(":compiler:tests-common-jvm6"))
 }
 
 sourceSets {
@@ -85,13 +89,12 @@ evaluationDependsOn(":compiler:tests-common-jvm6")
 fun Project.codegenTest(taskName: String, jdk: String, body: Test.() -> Unit): Test = projectTest(taskName) {
     dependsOn(*testDistProjects.map { "$it:dist" }.toTypedArray())
     workingDir = rootDir
-    environment("TEST_SERVER_CLASSES_DIRS", project(":compiler:tests-common-jvm6").the<JavaPluginConvention>().sourceSets.getByName("main").output.classesDirs.asPath)
 
-    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxCodegenTestGenerated*")
-    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxInlineCodegenTestGenerated*")
-    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.CompileKotlinAgainstInlineKotlinTestGenerated*")
+//    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxCodegenTestGenerated*")
+//    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxInlineCodegenTestGenerated*")
+//    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.CompileKotlinAgainstInlineKotlinTestGenerated*")
     filter.includeTestsMatching("org.jetbrains.kotlin.codegen.CompileKotlinAgainstKotlinTestGenerated*")
-    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxAgainstJavaCodegenTestGenerated*")
+    //filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxAgainstJavaCodegenTestGenerated*")
 
     if (jdk == "JDK_9") {
         jvmArgs = listOf("--add-opens", "java.desktop/javax.swing=ALL-UNNAMED", "--add-opens", "java.base/java.io=ALL-UNNAMED")
@@ -109,7 +112,59 @@ fun Project.codegenTest(taskName: String, jdk: String, body: Test.() -> Unit): T
     }
 }
 
+task("start-jvm6-server") {
+    val jdkPath = project.property("JDK_16") ?: error("JDK_16 is not optional to run this test")
+    val executable = "$jdkPath/bin/java"
+    val main = "org.jetbrains.kotlin.test.clientserver.TestProcessServer"
+    val workingDir = rootDir
+            //args("5005")
+
+    doFirst {
+        print("!!!!!!!!!!!")
+        print(getSourceSetsFrom(":kotlin-stdlib")["main"].output)
+
+
+        print(getSourceSetsFrom(":compiler:tests-common-jvm6")["main"].output.classesDirs)
+    }
+//    classpath(
+//            jdk6ServerCfg
+//            //getSourceSetsFrom(":compiler:tests-common-jvm6")["main"].output,
+////            getSourceSetsFrom(":kotlin-stdlib")["main"].output,
+////            getSourceSetsFrom(":kotlin-stdlib")["builtins"].output,
+//            //getSourceSetsFrom(":kotlin-test:kotlin-test-jvm")["main"].output
+//    )
+//
+//    val builder = ProcessBuilder(
+//            executable, "-cp", classpath,
+//            TestProcessServer::class.java.name, boxInSeparateProcessPort
+//    )
+//    println("Starting separate process to run test: " + builder.command().joinToString())
+//    builder.inheritIO()
+//    builder.redirectErrorStream(true)
+//    doFirst {
+//
+//
+//        jdkProcess = builder.start()
+//
+//        println("Starting JDK 6 server $executable")
+//        project.exec {
+//
+//        }
+//    }
+}
+
+task("stop-jvm6-server") {
+    dependsOn("ideaPlugin")
+    doFirst { logger.warn("'$name' task is deprecated, use '${dependsOn.last()}' instead") }
+}
+
 codegenTest("codegen-target6-jvm6-test", "JDK_18") {
+    dependsOn(":compiler:tests-common-jvm6:build","start-jvm6-server")
+    doFirst {
+        val jdkPath = project.property("JDK_16") ?: error("JDK_16 is not optional to run this test")
+        val executable = "$jdkPath/bin/java"
+        println("Starting jdk 6 server $executable")
+    }
     systemProperty("kotlin.test.default.jvm.target", "1.6")
     systemProperty("kotlin.test.java.compilation.target", "1.6")
     systemProperty("kotlin.test.box.in.separate.process.port", "5100")
