@@ -359,6 +359,20 @@ public class JsInliner extends JsVisitorWithContextImpl {
         // body of inline function can contain call to lambdas that need to be inlined
         JsStatement inlineableBodyWithLambdasInlined = accept(inlineableBody);
         assert inlineableBody == inlineableBodyWithLambdasInlined;
+
+        JsFunction currentFunction = getCurrentNamedFunction();
+        if (currentFunction != null) {
+            JsName returnVariable = MetadataProperties.getDefaultReturnVariable(getCurrentNamedFunction());
+            if (returnVariable != null) {
+                inlineableBody.accept(new RecursiveJsVisitor() {
+                    @Override
+                    public void visitReturn(@NotNull JsReturn x) {
+                        x.setExpression(returnVariable.makeRef());
+                    }
+                });
+            }
+        }
+
         statementContext.addPrevious(flattenStatement(inlineableBody));
 
         /*
