@@ -86,7 +86,12 @@ fun Project.codegenTest(taskName: String, jdk: String, body: Test.() -> Unit): T
     dependsOn(*testDistProjects.map { "$it:dist" }.toTypedArray())
     workingDir = rootDir
     environment("TEST_SERVER_CLASSES_DIRS", project(":compiler:tests-common-jvm6").the<JavaPluginConvention>().sourceSets.getByName("main").output.classesDirs.asPath)
-    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.CodegenJdkCommonTestSuite*")
+
+    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxCodegenTestGenerated*")
+    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxInlineCodegenTestGenerated*")
+    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.CompileKotlinAgainstInlineKotlinTestGenerated*")
+    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.CompileKotlinAgainstKotlinTestGenerated*")
+    filter.includeTestsMatching("org.jetbrains.kotlin.codegen.BlackBoxAgainstJavaCodegenTestGenerated*")
 
     if (jdk == "JDK_9") {
         jvmArgs = listOf("--add-opens", "java.desktop/javax.swing=ALL-UNNAMED", "--add-opens", "java.base/java.io=ALL-UNNAMED")
