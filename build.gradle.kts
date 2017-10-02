@@ -330,7 +330,6 @@ tasks {
     }
 
     "jsCompilerTest" {
-        dependsOn("dist")
         dependsOn(":js:js.tests:test")
     }
 
