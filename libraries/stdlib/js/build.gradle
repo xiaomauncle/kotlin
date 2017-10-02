@@ -118,6 +118,7 @@ compileBuiltinsKotlin2Js {
         metaInfo = false
         outputFile = "${buildDir}/classes/builtins/kotlin.js"
         sourceMap = true
+        sourceMapPrefix = "./"
     }
 }
 
@@ -126,6 +127,7 @@ compileKotlin2Js {
     kotlinOptions {
         outputFile = "${buildDir}/classes/main/kotlin.js"
         sourceMap = true
+        sourceMapPrefix = "./"
     }
 }
 
@@ -172,23 +174,20 @@ task compileJs(type: JavaExec) {
 
         def sourceMapFile = file("${jsOutputFile}.map")
         def sourceMap = new groovy.json.JsonSlurper().parseText(sourceMapFile.text)
-        def sourceMapSourcesBaseDirs = [ "${rootDir}/..", jsSrcJsDir ]
-
-        sourceMap.sourcesContent = sourceMap.sources.collect { sourceName ->
-            sourceMapSourcesBaseDirs.collect { file("$it/$sourceName") }.find { it.exists() && it.name != "kotlin.js" }?.text
-        }
 
         def sourceMapBasePaths = [
-                "js/js.libraries/src/",
-                "libraries/stdlib/js/build/builtin-sources/",
-                "libraries/stdlib/js/build/builtin-sources-for-builtins/",
-                "libraries/stdlib/js/build/builtin-sources-for-builtins/",
-                "libraries/stdlib/js/build/common-sources/"
+                "./",
+                "kotlin/"
         ]
-
         sourceMap.sources = sourceMap.sources.collect { sourcePath ->
             def prefixToRemove = sourceMapBasePaths.find { basePath -> sourcePath.startsWith(basePath) }
             if (prefixToRemove != null) sourcePath.substring(prefixToRemove.length()) else sourcePath
+        }
+
+        def sourceMapSourcesBaseDirs = [ "${rootDir}/js/js.libraries/src/", builtinsSrcDir2, builtinsSrcDir, commonSrcDir, rootDir ]
+
+        sourceMap.sourcesContent = sourceMap.sources.collect { sourceName ->
+            sourceMapSourcesBaseDirs.collect { file("$it/$sourceName") }.find { it.exists() && it.name != "kotlin.js" }?.text
         }
 
         sourceMapFile.text = groovy.json.JsonOutput.toJson(sourceMap)
