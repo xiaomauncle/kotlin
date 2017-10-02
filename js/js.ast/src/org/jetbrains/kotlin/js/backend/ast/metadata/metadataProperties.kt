@@ -53,7 +53,7 @@ var JsNameRef.psiElement: PsiElement? by MetadataProperty(default = null)
 
 var JsFunction.isLocal: Boolean by MetadataProperty(default = false)
 
-var JsFunction.defaultReturnVariable: JsName? by MetadataProperty(default = null)
+var JsFunction.forcedReturnVariable: JsName? by MetadataProperty(default = null)
 
 var JsParameter.hasDefaultValue: Boolean by MetadataProperty(default = false)
 
