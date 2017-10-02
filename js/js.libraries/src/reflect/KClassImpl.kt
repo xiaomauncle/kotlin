@@ -19,12 +19,8 @@ package kotlin.reflect.js.internal
 import kotlin.reflect.*
 
 internal abstract class KClassImpl<T : Any>(
-        internal val jClass: JsClass<T>,
-        private val givenSimpleName: String? = null
+        internal val jClass: JsClass<T>
 ) : KClass<T> {
-    // TODO: use FQN
-    private val hashCodeValue = simpleName?.hashCode() ?: 0
-
     override val annotations: List<Annotation>
         get() = TODO()
     override val constructors: Collection<KFunction<T>>
@@ -62,9 +58,8 @@ internal abstract class KClassImpl<T : Any>(
         return other is KClassImpl<*> && jClass == other.jClass
     }
 
-    override fun hashCode(): Int {
-        return hashCodeValue
-    }
+    // TODO: use FQN
+    override fun hashCode(): Int = simpleName?.hashCode() ?: 0
 
     override fun toString(): String {
         // TODO: use FQN
@@ -73,9 +68,7 @@ internal abstract class KClassImpl<T : Any>(
 }
 
 internal class SimpleKClassImpl<T : Any>(jClass: JsClass<T>) : KClassImpl<T>(jClass) {
-    private val metadata = jClass.asDynamic().`$metadata$`
-
-    override val simpleName: String? = metadata?.simpleName
+    override val simpleName: String? = jClass.asDynamic().`$metadata$`?.simpleName.unsafeCast<String?>()
 
     override fun isInstance(value: Any?): Boolean {
         return js("Kotlin").isType(value, jClass)

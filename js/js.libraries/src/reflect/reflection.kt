@@ -39,7 +39,7 @@ internal fun <T : Any> getKClassFromExpression(e: T): KClass<T> =
                     e is FloatArray -> PrimitiveClasses.floatArrayClass
                     e is DoubleArray -> PrimitiveClasses.doubleArrayClass
                     e is KClass<*> -> KClass::class
-                    js("Array.isArray(e)") -> PrimitiveClasses.arrayClass
+                    e is Array<*> -> PrimitiveClasses.arrayClass
                     else -> {
                         val constructor = js("Object").getPrototypeOf(e).constructor
                         when {
