@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 buildscript {
     extra["defaultSnapshotVersion"] = "1.2-SNAPSHOT"
 
-    kotlinBootstrapFrom(BootstrapOption.BintrayDev("1.1.60-dev-277"))
+    kotlinBootstrapFrom(BootstrapOption.TeamCity("1.1.60-dev-448", onlySuccessBootstrap = false))
 
     val repos = listOfNotNull(
             bootstrapKotlinRepo,
