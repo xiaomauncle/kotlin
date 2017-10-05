@@ -24,10 +24,10 @@ internal object PrimitiveClasses {
     val anyClass = PrimitiveKClassImpl(js("Object").unsafeCast<JsClass<Any>>(), "Any", { it is Any })
 
     @JsName("numberClass")
-    val numberClass = PrimitiveKClassImpl(js("Number").unsafeCast<JsClass<Number>>(), "Number", { it is Double || it is Long })
+    val numberClass = PrimitiveKClassImpl(js("Number").unsafeCast<JsClass<Number>>(), "Number", { it is Number })
 
     @JsName("nothingClass")
-    val nothingClass = PrimitiveKClassImpl(js("Object").unsafeCast<JsClass<Nothing>>(), "Nothing", { false })
+    val nothingClass = NothingKClassImpl
 
     @JsName("booleanClass")
     val booleanClass = PrimitiveKClassImpl(js("Boolean").unsafeCast<JsClass<Boolean>>(), "Boolean",  { it is Boolean })
@@ -82,13 +82,10 @@ internal object PrimitiveClasses {
 
     @JsName("functionClass")
     fun functionClass(arity: Int): KClassImpl<Any> {
-        while (functionClasses.size <= arity) {
-            functionClasses.asDynamic().push(null)
-        }
-        return functionClasses?.get(arity) ?: run {
+        return functionClasses.get(arity) ?: run {
             val result = PrimitiveKClassImpl(js("Function").unsafeCast<JsClass<Any>>(), "Function$arity",
                                              { jsTypeOf(it) === "function" && it.asDynamic().length == arity })
-            functionClasses[arity] = result
+            functionClasses.asDynamic()[arity] = result
             result
         }
     }

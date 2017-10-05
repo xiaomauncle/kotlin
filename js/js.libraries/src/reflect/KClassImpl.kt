@@ -19,7 +19,7 @@ package kotlin.reflect.js.internal
 import kotlin.reflect.*
 
 internal abstract class KClassImpl<T : Any>(
-        internal val jClass: JsClass<T>
+        internal open val jClass: JsClass<T>
 ) : KClass<T> {
     override val annotations: List<Annotation>
         get() = TODO()
@@ -85,9 +85,22 @@ internal class PrimitiveKClassImpl<T : Any>(
         return super.equals(other) && givenSimpleName == other.givenSimpleName
     }
 
-    override val simpleName: String? = givenSimpleName
+    override val simpleName: String? get() = givenSimpleName
 
     override fun isInstance(value: Any?): Boolean {
         return isInstanceFunction(value)
     }
+}
+
+internal object NothingKClassImpl : KClassImpl<Nothing>(js("Object")) {
+    override val simpleName: String = "Nothing"
+
+    override fun isInstance(value: Any?): Boolean = false
+
+    override val jClass: JsClass<Nothing>
+        get() = throw UnsupportedOperationException("There's no native JS class for Nothing type")
+
+    override fun equals(other: Any?): Boolean = other === this
+
+    override fun hashCode(): Int = 0
 }

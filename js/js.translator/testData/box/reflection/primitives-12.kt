@@ -4,7 +4,6 @@ import kotlin.reflect.KClass
 
 fun box(): String {
     check(js("Object"), "Any", Any::class)
-    check(js("Object"), "Nothing", Nothing::class)
     check(js("String"), "String", String::class)
     check(js("Boolean"), "Boolean", Boolean::class)
     check(js("Error"), "Throwable", Throwable::class)
@@ -65,6 +64,15 @@ fun box(): String {
     assertEquals("KClass", KClass::class.simpleName)
     assertEquals("KClass", Any::class::class.simpleName)
     assertEquals("KClass", Map::class::class.simpleName)
+
+    try {
+        assertEquals("Nothing", Nothing::class.simpleName)
+        Nothing::class.js
+        fail("Exception expected when trying to get JS class for Nothing type")
+    }
+    catch (e: UnsupportedOperationException) {
+        // It's OK
+    }
 
     return "OK"
 }
