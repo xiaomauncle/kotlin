@@ -74,6 +74,8 @@ internal annotation class DynamicExtension
  * but might not be immediately clear to the user). The diagnostic severity can be specified with [level]: WARNING/ERROR mean that either
  * a warning or an error is going to be reported, HIDDEN means that the declaration is going to be removed from resolution completely.
  *
+ * [versionKind] specifies which version should be compared with the [version] value, when compiling the usage of the annotated declaration.
+ *
  * This annotation is erased at compile time; its arguments are stored in a more compact form in the Kotlin metadata.
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR, AnnotationTarget.TYPEALIAS)
@@ -82,5 +84,15 @@ internal annotation class RequireKotlin(
         val version: String,
         val message: String = "",
         val level: DeprecationLevel = DeprecationLevel.ERROR,
+        val versionKind: RequireKotlinVersionKind = RequireKotlinVersionKind.LANGUAGE_VERSION,
         val errorCode: Int = -1
 )
+
+/**
+ * The kind of the version that is required by [RequireKotlin].
+ */
+internal enum class RequireKotlinVersionKind {
+    LANGUAGE_VERSION,
+    COMPILER_VERSION,
+    API_VERSION,
+}
