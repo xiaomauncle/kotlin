@@ -53,4 +53,10 @@ public class DceTestGenerated extends AbstractDceTest {
         String fileName = KotlinTestUtils.navigationMetadata("js/js.translator/testData/dce/cycle.js");
         doTest(fileName);
     }
+
+    @TestMetadata("localVarAndFunction.js")
+    public void testLocalVarAndFunction() throws Exception {
+        String fileName = KotlinTestUtils.navigationMetadata("js/js.translator/testData/dce/localVarAndFunction.js");
+        doTest(fileName);
+    }
 }
