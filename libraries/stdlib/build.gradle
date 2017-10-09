@@ -109,6 +109,11 @@ dist {
     }
 }
 
+task dexMethodCount(type: DexMethodCount) {
+    dependsOn jar
+    jarFile = jar.archivePath
+}
+
 compileBuiltinsKotlin {
     dependsOn ":core:builtins:serialize"
     kotlinOptions {
